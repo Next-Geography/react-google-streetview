@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import asyncLoading from 'react-async-loader';
 import isEqual from 'lodash.isequal';
 
+const BASE_URL = process.env.BASE_URL || 'https://maps.googleapis.com';
+
 class GoogleStreetview extends React.Component {
   constructor() {
     super();
@@ -120,11 +122,11 @@ GoogleStreetview.defaultProps = {
     zoom: 1,
   },
   googleMaps: {},
-  onPositionChanged: () => {},
-  onPovChanged: () => {},
-  onZoomChanged: () => {},
-  onPanoChanged: () => {},
-  onVisibleChanged: () => {},
+  onPositionChanged: () => { },
+  onPovChanged: () => { },
+  onZoomChanged: () => { },
+  onPanoChanged: () => { },
+  onVisibleChanged: () => { },
 };
 
 function mapScriptsToProps({ apiKey }) {
@@ -133,7 +135,7 @@ function mapScriptsToProps({ apiKey }) {
   return {
     googleMaps: {
       globalPath: 'google.maps',
-      url: `https://maps.googleapis.com/maps/api/js?key=${apiKey}`,
+      url: `${BASE_URL}/maps/api/js?key=${apiKey}`,
       jsonp: true,
     },
   };
