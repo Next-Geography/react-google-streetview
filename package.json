@@ -2,8 +2,8 @@
   "name": "react-google-streetview",
   "version": "0.0.9",
   "description": "A react component for the google-streetview lib",
-  "main": "src/index.jsx",
-  "module": "src/index.jsx",
+  "main": "dist/react-google-streetview.js",
+  "module": "dist/react-google-streetview.js",
   "files": [
     "dist"
   ],
