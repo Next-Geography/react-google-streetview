@@ -2,8 +2,8 @@
   "name": "react-google-streetview",
   "version": "0.0.9",
   "description": "A react component for the google-streetview lib",
-  "main": "dist/react-google-streetview.js",
-  "module": "dist/react-google-streetview.js",
+  "main": "src/index.jsx",
+  "module": "src/index.jsx",
   "files": [
     "dist"
   ],
@@ -18,7 +18,7 @@
   "license": "Apache License - 2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexus37/react-google-streetview"
+    "url": "https://github.com/Next-Geography/react-google-streetview"
   },
   "peerDependencies": {
     "react": ">=16.10.1",
