@@ -1,144 +1,106 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import asyncLoading from 'react-async-loader';
 import isEqual from 'lodash.isequal';
 
-class GoogleStreetview extends React.Component {
-  constructor() {
-    super();
-    this.streetView = null;
-  }
+const GoogleStreetview = ({
+  streetViewPanoramaOptions,
+  onPanoChanged,
+  onPositionChanged,
+  onPovChanged,
+  onVisibleChanged,
+  onZoomChanged,
+}) => {
+  const nodeRef = useRef(null);
+  const streetViewRef = useRef(null);
 
-  componentDidMount() {
-    this.initialize(this.node, this.props);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.initialize(this.node, prevProps);
-  }
-
-  componentWillUnmount() {
-    if (this.streetView) {
-      this.props.googleMaps.event.clearInstanceListeners(this.streetView);
-    }
-  }
-
-  initialize(canvas, prevProps) {
-    if (this.props.googleMaps && this.streetView == null) {
-      this.streetView = new this.props.googleMaps.StreetViewPanorama(
+  const initialize = (canvas, prevOptions) => {
+    if (window.google && window.google.maps && !streetViewRef.current) {
+      streetViewRef.current = new window.google.maps.StreetViewPanorama(
         canvas,
-        this.props.streetViewPanoramaOptions,
+        streetViewPanoramaOptions,
       );
 
-      this.streetView.addListener('pano_changed', () => {
-        if (this.props.onPanoChanged) {
-          this.props.onPanoChanged(this.streetView.getPano());
-        }
+      streetViewRef.current.addListener('pano_changed', () => {
+        onPanoChanged(streetViewRef.current.getPano());
       });
 
-      this.streetView.addListener('position_changed', () => {
-        if (this.props.onPositionChanged) {
-          this.props.onPositionChanged(this.streetView.getPosition());
-        }
+      streetViewRef.current.addListener('position_changed', () => {
+        onPositionChanged(streetViewRef.current.getPosition());
       });
 
-      this.streetView.addListener('pov_changed', () => {
-        if (this.props.onPovChanged) {
-          this.props.onPovChanged(this.streetView.getPov());
-        }
+      streetViewRef.current.addListener('pov_changed', () => {
+        onPovChanged(streetViewRef.current.getPov());
       });
 
-      this.streetView.addListener('visible_changed', () => {
-        if (this.props.onVisibleChanged) {
-          this.props.onVisibleChanged(this.streetView.getVisible());
-        }
+      streetViewRef.current.addListener('visible_changed', () => {
+        onVisibleChanged(streetViewRef.current.getVisible());
       });
 
-      this.streetView.addListener('zoom_changed', () => {
-        if (this.props.onZoomChanged) {
-          this.props.onZoomChanged(this.streetView.getZoom());
-        }
+      streetViewRef.current.addListener('zoom_changed', () => {
+        onZoomChanged(streetViewRef.current.getZoom());
       });
     }
+
     if (
-      this.streetView !== null &&
-      this.props.streetViewPanoramaOptions &&
-      !isEqual(
-        this.props.streetViewPanoramaOptions,
-        prevProps.streetViewPanoramaOptions,
-      )
+      streetViewRef.current &&
+      streetViewPanoramaOptions &&
+      !isEqual(streetViewPanoramaOptions, prevOptions)
     ) {
-      const {
-        zoom,
-        pov,
-        position,
-        ...otherOptions
-      } = this.props.streetViewPanoramaOptions;
-      const {
-        zoom: prevZoom,
-        pov: prevPov,
-        position: prevPos,
-        ...prevOtherOptions
-      } = prevProps.streetViewPanoramaOptions;
+      const { zoom, pov, position, ...otherOptions } = streetViewPanoramaOptions;
+      const { zoom: prevZoom, pov: prevPov, position: prevPos, ...prevOtherOptions } = prevOptions;
+
       if (!isEqual(zoom, prevZoom)) {
-        this.streetView.setZoom(zoom);
+        streetViewRef.current.setZoom(zoom);
       }
       if (!isEqual(pov, prevPov)) {
-        this.streetView.setPov(pov);
+        streetViewRef.current.setPov(pov);
       }
       if (!isEqual(position, prevPos)) {
-        this.streetView.setPosition(position);
+        streetViewRef.current.setPosition(position);
       }
       if (!isEqual(otherOptions, prevOtherOptions)) {
-        this.streetView.setOptions(otherOptions);
+        streetViewRef.current.setOptions(otherOptions);
       }
     }
-  }
+  };
 
-  render() {
-    return <div style={{ height: '100%' }} ref={node => (this.node = node)} />;
-  }
-}
+  useEffect(() => {
+    initialize(nodeRef.current, {});
+
+    return () => {
+      if (streetViewRef.current) {
+        window.google.maps.event.clearInstanceListeners(streetViewRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    initialize(nodeRef.current, streetViewPanoramaOptions);
+  }, [streetViewPanoramaOptions]);
+
+  return <div style={{ height: '100%' }} ref={nodeRef} />;
+};
 
 GoogleStreetview.propTypes = {
-  /* eslint-disable react/no-unused-prop-types */
-  apiKey: PropTypes.string,
   streetViewPanoramaOptions: PropTypes.object,
   onPositionChanged: PropTypes.func,
   onPovChanged: PropTypes.func,
   onZoomChanged: PropTypes.func,
   onPanoChanged: PropTypes.func,
   onVisibleChanged: PropTypes.func,
-  googleMaps: PropTypes.object,
-  baseURL: PropTypes.string,
 };
 
 GoogleStreetview.defaultProps = {
-  apiKey: null,
   streetViewPanoramaOptions: {
     position: { lat: 46.9171876, lng: 17.8951832 },
     pov: { heading: 0, pitch: 0 },
     zoom: 1,
   },
-  googleMaps: {},
-  baseURL: 'https://maps.googleapis.com/',
-  onPositionChanged: () => { },
-  onPovChanged: () => { },
-  onZoomChanged: () => { },
-  onPanoChanged: () => { },
-  onVisibleChanged: () => { },
+  onPositionChanged: () => {},
+  onPovChanged: () => {},
+  onZoomChanged: () => {},
+  onPanoChanged: () => {},
+  onVisibleChanged: () => {},
 };
 
-function mapScriptsToProps({ apiKey, baseURL }) {
-  if (!apiKey) return {};
-
-  return {
-    googleMaps: {
-      globalPath: 'google.maps',
-      url: `${baseURL}/maps/api/js?key=${apiKey}`,
-      jsonp: true,
-    },
-  };
-}
-
-export default asyncLoading(mapScriptsToProps)(GoogleStreetview);
+export default GoogleStreetview;
